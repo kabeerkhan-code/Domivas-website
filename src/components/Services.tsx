@@ -74,7 +74,7 @@ const Services = () => {
                 rel="noopener noreferrer"
                 className="inline-block bg-red-600 hover:bg-red-700 text-white px-8 sm:px-12 md:px-16 lg:px-20 py-6 sm:py-8 rounded-full hover:shadow-2xl transition-all duration-500 font-black text-lg sm:text-xl md:text-2xl lg:text-3xl uppercase tracking-wide hover:scale-105 hover:-translate-y-3 shadow-lg border-4 border-red-700 mb-6 w-full max-w-3xl"
               >
-                🚀 Explore Live Demo Site
+                Explore Live Demo Site
               </a>
               
               <p className="text-gray-400 text-lg font-medium">
