@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Calendar, User, Mail, Phone, Building2 } from 'lucide-react';
-import emailjs from '@emailjs/browser';
+import { createBooking, getBookedTimes } from '../lib/supabase';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -51,12 +51,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   // Fetch booked times when date changes
   React.useEffect(() => {
     if (formData.preferredDate) {
-      fetchBookedTimes(formData.preferredDate);
+      fetchBookedTimesFromSupabase(formData.preferredDate);
     }
   }, [formData.preferredDate]);
 
-  // Function to fetch booked times from your backend
-  const fetchBookedTimes = async (date: string) => {
+  // Function to fetch booked times from Supabase
+  const fetchBookedTimesFromSupabase = async (date: string) => {
     // Input validation for date
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(date)) {
@@ -76,37 +76,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
 
     setLoadingTimes(true);
     try {
-      // Secure API call with proper headers
-      const response = await fetch(`/api/bookings/booked-times?date=${encodeURIComponent(date)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-          'X-Session-ID': sessionId,
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        credentials: 'same-origin'
-      });
-      
-      // Check if response is ok and content type is JSON
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Invalid response format');
-      }
-      
-      const data = await response.json();
-      
-      // Validate response structure
-      if (!data || !Array.isArray(data.bookedTimes)) {
-        throw new Error('Invalid response structure');
-      }
+      // Fetch booked times from Supabase
+      const bookedTimesData = await getBookedTimes(date);
       
       // Validate each booked time format
-      const validBookedTimes = data.bookedTimes.filter((time: string) => {
+      const validBookedTimes = bookedTimesData.filter((time: string) => {
         const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
         return typeof time === 'string' && timeRegex.test(time);
       });
@@ -246,51 +220,45 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     setLastSubmitTime(Date.now());
     
     try {
-      // Secure submission with proper headers and CSRF protection
-      const response = await fetch('/api/bookings/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-          'X-Session-ID': sessionId,
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({
-          'form-name': 'consultation-booking',
-          ...validatedData,
-          timestamp: new Date().toISOString(),
-          userAgent: navigator.userAgent.substring(0, 200), // Limited length
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-        })
+      // Create booking in Supabase
+      const result = await createBooking({
+        name: validatedData.name,
+        email: validatedData.email,
+        phone: validatedData.phone,
+        business_name: validatedData.businessName,
+        booking_date: validatedData.preferredDate,
+        booking_time: validatedData.preferredTime,
+        status: 'pending',
+        user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        notes: `Form submitted at: ${new Date().toISOString()}`
       });
       
-      // Check response
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Validate response has expected structure
-        if (result && result.success) {
-          setIsSubmitted(true);
-          // Reset form after successful submission
-          setFormData({
-            name: '',
-            email: '',
-            phone: '',
-            businessName: '',
-            preferredDate: '',
-            preferredTime: ''
-          });
-        } else {
-          throw new Error('Invalid response from server');
-        }
+      if (result.success) {
+        setIsSubmitted(true);
+        // Reset form after successful submission
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          businessName: '',
+          preferredDate: '',
+          preferredTime: ''
+        });
       } else {
-        throw new Error(`Server error: ${response.status}`);
+        // Handle specific error messages
+        alert(result.error || 'Failed to book consultation. Please try again.');
       }
     } catch (error) {
       console.error('Form submission error:', error);
-      // Don't expose detailed error information to user
-      alert('There was an error submitting your request. Please try again or contact support.');
+      
+      // Try fallback Netlify submission for contact purposes
+      const fallbackSuccess = await submitToNetlify(validatedData);
+      
+      if (fallbackSuccess) {
+        alert('Your consultation request was submitted, but there may have been a scheduling conflict. We\'ll contact you within 24 hours to confirm your appointment time.');
+      } else {
+        alert('There was an error submitting your request. Please try again or contact support directly.');
+      }
     } finally {
       setIsSubmitting(false);
     }
