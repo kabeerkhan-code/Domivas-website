@@ -12,12 +12,17 @@ export interface Booking {
   email: string;
   phone: string;
   business_name: string;
+  
+  // UK (Your) side - when YOU make the call
   appointment_date_uk: string;
   appointment_time_uk: string;
+  
+  // User's side - their local date/time
   appointment_date_user: string;
   appointment_time_user: string;
   user_timezone: string;
   user_display_time: string;
+  
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   created_at?: string;
   updated_at?: string;
@@ -61,7 +66,7 @@ export const createBooking = async (booking: Omit<Booking, 'id' | 'created_at' |
       return { success: false, error: 'Invalid appointment date' };
     }
 
-    // Check if slot is already booked
+    // Check if slot is already booked (double booking prevention)
     const existingBooking = await supabase
       .from('bookings')
       .select('id')
@@ -97,7 +102,7 @@ export const createBooking = async (booking: Omit<Booking, 'id' | 'created_at' |
   }
 };
 
-// Get booked times for a specific date
+// Get booked times for a specific date (double booking prevention)
 export const getBookedTimes = async (date: string): Promise<string[]> => {
   try {
     // Input validation

@@ -48,14 +48,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     setSessionId(generateSecureToken());
   }, []);
 
-  // Fetch booked times when date changes
+  // Fetch booked times when date changes (DOUBLE BOOKING PREVENTION)
   React.useEffect(() => {
     if (formData.preferredDate) {
       fetchBookedTimesFromSupabase(formData.preferredDate);
     }
   }, [formData.preferredDate]);
 
-  // Function to fetch booked times from Supabase
+  // Function to fetch booked times from Supabase (DOUBLE BOOKING PREVENTION)
   const fetchBookedTimesFromSupabase = async (date: string) => {
     // Input validation for date
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -94,6 +94,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       setLoadingTimes(false);
     }
   };
+
   // Security: Input validation and sanitization
   const validateInput = (value: string, type: 'name' | 'email' | 'phone' | 'business' | 'date' | 'time') => {
     // Remove potentially dangerous characters and scripts
@@ -191,7 +192,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       return;
     }
     
-    // Security: Prevent too fast submissions (minimum 10 seconds)
+    // Security: Prevent too fast submissions (minimum 60 seconds)
     const timeSinceFormStart = Date.now() - formStartTime;
     if (timeSinceFormStart < 60000) {
       alert('Please take your time filling out the form.');
@@ -228,8 +229,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       const ukDateTime = new Date(selectedDate);
       ukDateTime.setHours(ukHours, ukMinutes, 0, 0);
       
-      // Convert to user's timezone
+      // Get user's timezone
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Convert UK time to user's timezone
       const userDateTime = new Date(ukDateTime.toLocaleString('en-US', { timeZone: userTimezone }));
       
       // Format user's local date and time
@@ -248,18 +251,18 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
         timeZoneName: 'short'
       });
       
-      // Create booking in Supabase
+      // Create booking in Supabase with DUAL TIMEZONE DATA
       const result = await createBooking({
         name: validatedData.name,
         email: validatedData.email,
         phone: validatedData.phone,
         business_name: validatedData.businessName,
         
-        // UK (Your) side
+        // UK (Your) side - when YOU make the call
         appointment_date_uk: validatedData.preferredDate,
-        appointment_time_uk: validatedData.preferredTime, // This is UK time
+        appointment_time_uk: validatedData.preferredTime,
         
-        // User's side
+        // User's side - their local date/time
         appointment_date_user: userLocalDate,
         appointment_time_user: userLocalTime,
         user_timezone: userTimezone,
@@ -387,13 +390,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     return dates;
   };
 
-  // Generate time options based on UK business hours (9am-6pm) but show in user's timezone
+  // Generate time options with DOUBLE BOOKING PREVENTION
   const generateTimeOptions = (selectedDate?: string) => {
     const times = [];
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     
-    // UK business hours: 9am to 6:30pm (every 20 minutes) - converted to user's timezone
-    // UK business hours: 9am to 9:00pm (every 20 minutes) - converted to user's timezone
+    // UK business hours: 9am to 9:00pm (every 20 minutes)
     const ukBusinessHours = [];
     
     // Generate times in 20-minute intervals
@@ -408,7 +410,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     }
     
     ukBusinessHours.forEach(ukTime => {
-      // Skip booked times
+      // DOUBLE BOOKING PREVENTION: Skip booked times
       if (bookedTimes.includes(ukTime)) {
         return;
       }
@@ -463,6 +465,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     
     return times;
   };
+
   if (!isOpen) return null;
 
   return (
@@ -635,7 +638,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                 </select>
               </div>
 
-              {/* Time Selection */}
+              {/* Time Selection with DOUBLE BOOKING PREVENTION */}
               <div>
                 <label htmlFor="preferredTime" className="block text-sm font-black text-gray-900 mb-3 uppercase tracking-wide flex items-center">
                   <Calendar size={16} className="mr-2" />
@@ -664,6 +667,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   Times shown in your local timezone. All appointments are conducted during UK business hours (9 AM - 9 PM GMT).
                 </p>
               </div>
+
               {/* Additional Info */}
               <div className="bg-gray-50 rounded-2xl p-6">
                 <h3 className="font-black text-gray-900 mb-3">What happens next?</h3>
