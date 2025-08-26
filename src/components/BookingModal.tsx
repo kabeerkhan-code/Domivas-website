@@ -173,7 +173,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const [honeypot, setHoneypot] = useState('');
 
   // Security: Form submission timing (prevent too fast submissions)
-  const [formStartTime] = useState(Date.now());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,13 +188,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     // Security: Check honeypot (if filled, it's likely a bot)
     if (honeypot) {
       console.log('Bot detected via honeypot');
-      return;
-    }
-    
-    // Security: Prevent too fast submissions (minimum 60 seconds)
-    const timeSinceFormStart = Date.now() - formStartTime;
-    if (timeSinceFormStart < 60000) {
-      alert('Please take your time filling out the form.');
       return;
     }
     

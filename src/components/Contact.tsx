@@ -59,20 +59,11 @@ const Contact = () => {
     if (timeSinceLastSubmit > 300000) {
       setSubmitAttempts(0);
     }
-    
-    return true;
   };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Security checks
-    if (isSubmitting) return;
-    
-    if (!checkRateLimit()) {
-      alert('Too many submission attempts. Please wait a few minutes before trying again.');
-      return;
-    }
-    
     // Validate all inputs
     const validatedData = {
       name: validateInput(formData.name, 'name'),
