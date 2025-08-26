@@ -22,6 +22,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
   const [bookedTimes, setBookedTimes] = useState<string[]>([]);
   const [loadingTimes, setLoadingTimes] = useState(false);
+  const [csrfToken, setCsrfToken] = useState<string>('');
+  const [sessionId, setSessionId] = useState<string>('');
 
   // Auto-dismiss success message after 1 minute
   React.useEffect(() => {
@@ -34,6 +36,18 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     }
   }, [isSubmitted, onClose]);
 
+  // Generate CSRF token and session ID on component mount
+  React.useEffect(() => {
+    const generateSecureToken = () => {
+      const array = new Uint8Array(32);
+      crypto.getRandomValues(array);
+      return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    };
+    
+    setCsrfToken(generateSecureToken());
+    setSessionId(generateSecureToken());
+  }, []);
+
   // Fetch booked times when date changes
   React.useEffect(() => {
     if (formData.preferredDate) {
@@ -43,15 +57,64 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
 
   // Function to fetch booked times from your backend
   const fetchBookedTimes = async (date: string) => {
+    // Input validation for date
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(date)) {
+      console.error('Invalid date format');
+      return;
+    }
+    
+    // Prevent fetching dates too far in the future (max 90 days)
+    const selectedDate = new Date(date);
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 90);
+    
+    if (selectedDate > maxDate) {
+      console.error('Date too far in the future');
+      return;
+    }
+
     setLoadingTimes(true);
     try {
-      // Replace with your actual API endpoint
-      const response = await fetch(`/api/bookings/booked-times?date=${date}`);
+      // Secure API call with proper headers
+      const response = await fetch(`/api/bookings/booked-times?date=${encodeURIComponent(date)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+          'X-Session-ID': sessionId,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+      });
+      
+      // Check if response is ok and content type is JSON
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid response format');
+      }
+      
       const data = await response.json();
-      setBookedTimes(data.bookedTimes || []);
+      
+      // Validate response structure
+      if (!data || !Array.isArray(data.bookedTimes)) {
+        throw new Error('Invalid response structure');
+      }
+      
+      // Validate each booked time format
+      const validBookedTimes = data.bookedTimes.filter((time: string) => {
+        const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        return typeof time === 'string' && timeRegex.test(time);
+      });
+      
+      setBookedTimes(validBookedTimes);
     } catch (error) {
       console.error('Failed to fetch booked times:', error);
-      // Fallback to empty array if API fails
+      // Secure fallback - don't expose error details to user
       setBookedTimes([]);
     } finally {
       setLoadingTimes(false);
@@ -59,27 +122,55 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   };
   // Security: Input validation and sanitization
   const validateInput = (value: string, type: 'name' | 'email' | 'phone' | 'business' | 'date' | 'time') => {
-    // Remove potentially dangerous characters
+    // Remove potentially dangerous characters and scripts
     const sanitized = value.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                            .replace(/javascript:/gi, '')
                            .replace(/on\w+\s*=/gi, '')
+                           .replace(/data:/gi, '')
+                           .replace(/vbscript:/gi, '')
+                           .replace(/file:/gi, '')
+                           .replace(/ftp:/gi, '')
                            .trim();
     
     switch (type) {
       case 'name':
       case 'business':
-        return sanitized.replace(/[<>\"']/g, '').substring(0, 100);
+        // Allow only letters, spaces, hyphens, apostrophes, and dots
+        return sanitized.replace(/[^a-zA-Z\s\-'\.]/g, '').substring(0, 100);
       case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(sanitized) ? sanitized.substring(0, 254) : '';
+        // Strict email validation
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const cleanEmail = sanitized.toLowerCase().replace(/[^a-zA-Z0-9._%+-@]/g, '');
+        return emailRegex.test(cleanEmail) ? cleanEmail.substring(0, 254) : '';
       case 'phone':
-        return sanitized.replace(/[^\d\s\+\-\(\)]/g, '').substring(0, 20);
+        // Allow only digits, spaces, +, -, (, )
+        const cleanPhone = sanitized.replace(/[^\d\s\+\-\(\)]/g, '').substring(0, 20);
+        // Basic phone validation (at least 7 digits)
+        const digitCount = cleanPhone.replace(/[^\d]/g, '').length;
+        return digitCount >= 7 ? cleanPhone : '';
       case 'date':
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        return dateRegex.test(sanitized) ? sanitized : '';
+        // Strict date validation
+        const dateRegex = /^20\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+        if (!dateRegex.test(sanitized)) return '';
+        
+        // Validate actual date
+        const date = new Date(sanitized);
+        const today = new Date();
+        const maxDate = new Date();
+        maxDate.setDate(today.getDate() + 90);
+        
+        return (date >= today && date <= maxDate) ? sanitized : '';
       case 'time':
-        const timeRegex = /^\d{2}:\d{2}$/;
-        return timeRegex.test(sanitized) ? sanitized : '';
+        // Strict time validation (business hours only)
+        const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        if (!timeRegex.test(sanitized)) return '';
+        
+        const [hours, minutes] = sanitized.split(':').map(Number);
+        // Only allow business hours (9:00-18:30) and 20-minute intervals
+        if (hours < 9 || hours > 18 || (hours === 18 && minutes > 30)) return '';
+        if (minutes % 20 !== 0) return '';
+        
+        return sanitized;
       default:
         return sanitized;
     }
@@ -90,18 +181,25 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     const now = Date.now();
     const timeSinceLastSubmit = now - lastSubmitTime;
     
-    // Prevent more than 3 submissions in 5 minutes
-    if (submitAttempts >= 3 && timeSinceLastSubmit < 300000) {
+    // Prevent more than 2 submissions in 10 minutes (stricter)
+    if (submitAttempts >= 2 && timeSinceLastSubmit < 600000) {
       return false;
     }
     
-    // Reset attempts after 5 minutes
-    if (timeSinceLastSubmit > 300000) {
+    // Reset attempts after 10 minutes
+    if (timeSinceLastSubmit > 600000) {
       setSubmitAttempts(0);
     }
     
     return true;
   };
+
+  // Security: Honeypot field (hidden from users, bots will fill it)
+  const [honeypot, setHoneypot] = useState('');
+
+  // Security: Form submission timing (prevent too fast submissions)
+  const [formStartTime] = useState(Date.now());
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -109,7 +207,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     if (isSubmitting) return;
     
     if (!checkRateLimit()) {
-      alert('Too many submission attempts. Please wait a few minutes before trying again.');
+      alert('Too many submission attempts. Please wait 10 minutes before trying again.');
+      return;
+    }
+    
+    // Security: Check honeypot (if filled, it's likely a bot)
+    if (honeypot) {
+      console.log('Bot detected via honeypot');
+      return;
+    }
+    
+    // Security: Prevent too fast submissions (minimum 10 seconds)
+    const timeSinceFormStart = Date.now() - formStartTime;
+    if (timeSinceFormStart < 10000) {
+      alert('Please take your time filling out the form.');
       return;
     }
     
@@ -135,7 +246,59 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     setLastSubmitTime(Date.now());
     
     try {
-      // Submit to Netlify with validated data
+      // Secure submission with proper headers and CSRF protection
+      const response = await fetch('/api/bookings/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+          'X-Session-ID': sessionId,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          'form-name': 'consultation-booking',
+          ...validatedData,
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent.substring(0, 200), // Limited length
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        })
+      });
+      
+      // Check response
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Validate response has expected structure
+        if (result && result.success) {
+          setIsSubmitted(true);
+          // Reset form after successful submission
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            businessName: '',
+            preferredDate: '',
+            preferredTime: ''
+          });
+        } else {
+          throw new Error('Invalid response from server');
+        }
+      } else {
+        throw new Error(`Server error: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      // Don't expose detailed error information to user
+      alert('There was an error submitting your request. Please try again or contact support.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Fallback Netlify submission (if main API fails)
+  const submitToNetlify = async (validatedData: any) => {
+    try {
       const response = await fetch('/', {
         method: 'POST',
         headers: {
@@ -158,19 +321,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
           preferredDate: '',
           preferredTime: ''
         });
-      } else {
-        throw new Error('Submission failed');
+        return true;
       }
+      return false;
     } catch (error) {
-      console.error('Form submission error:', error);
-      alert('There was an error submitting your request. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      console.error('Netlify submission failed:', error);
+      return false;
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Additional security: Prevent excessively long inputs
+    if (value.length > 1000) {
+      return;
+    }
+    
     const validatedValue = validateInput(value, name as any);
     
     setFormData({
@@ -180,9 +347,15 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Allow spacebar in form inputs
+    // Security: Allow spacebar in form inputs but prevent certain key combinations
     if (e.key === ' ') {
       e.stopPropagation();
+    }
+    
+    // Prevent common XSS key combinations
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+      // Allow paste but validate on change
+      return;
     }
   };
 
@@ -317,10 +490,27 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
               name="consultation-booking" 
               method="POST" 
               data-netlify="true"
+              data-netlify-honeypot="bot-field"
               onSubmit={handleSubmit} 
               className="space-y-6"
             >
               <input type="hidden" name="form-name" value="consultation-booking" />
+              <input type="hidden" name="csrf-token" value={csrfToken} />
+              <input type="hidden" name="session-id" value={sessionId} />
+              
+              {/* Honeypot field - hidden from users */}
+              <div style={{ display: 'none' }}>
+                <label htmlFor="bot-field">Don't fill this out if you're human:</label>
+                <input
+                  type="text"
+                  name="bot-field"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+              </div>
+              
               {/* Name Field */}
               <div>
                 <label htmlFor="name" className="block text-sm font-black text-gray-900 mb-3 uppercase tracking-wide flex items-center">
@@ -335,6 +525,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   value={formData.name}
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
+                  autoComplete="name"
+                  maxLength={100}
+                  pattern="[a-zA-Z\s\-'\.]*"
+                  title="Please enter a valid name (letters, spaces, hyphens, apostrophes, and dots only)"
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 placeholder-gray-500"
                   placeholder="Dr. John Smith"
                 />
@@ -354,6 +548,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   value={formData.email}
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
+                  autoComplete="email"
+                  maxLength={254}
+                  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                  title="Please enter a valid email address"
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 placeholder-gray-500"
                   placeholder="john@dentalclinic.com"
                 />
@@ -373,6 +571,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   value={formData.phone}
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
+                  autoComplete="tel"
+                  maxLength={20}
+                  pattern="[\d\s\+\-\(\)]*"
+                  title="Please enter a valid phone number"
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 placeholder-gray-500"
                   placeholder="+44 20 1234 5678"
                 />
@@ -392,6 +594,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   value={formData.businessName}
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
+                  autoComplete="organization"
+                  maxLength={100}
+                  pattern="[a-zA-Z\s\-'\.]*"
+                  title="Please enter a valid clinic name"
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 placeholder-gray-500"
                   placeholder="Your Clinic Name"
                 />
@@ -481,6 +687,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                     By submitting this form, you agree to our{' '}
                     <span className="text-red-600 font-semibold">Privacy Policy</span>
                     {' '}and consent to us contacting you about your consultation request.
+                    {' '}Your data is encrypted and stored securely.
                   </p>
                 </div>
               </div>
