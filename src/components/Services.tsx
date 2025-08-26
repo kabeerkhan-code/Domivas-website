@@ -49,9 +49,10 @@ const Services = () => {
                 See It <span className="text-red-500">Live</span>
               </h3>
               
-              <p className="text-xl lg:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-                Clean design. Clear messaging. Built for trust.
-              </p>
+              <div className="text-xl lg:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed space-y-4">
+                <p>Clean design. Clear messaging. Built for trust.</p>
+                <p>This is the exact quality level you get. Professional, modern, conversion-focused.</p>
+              </div>
               
               <a 
                 href="https://domivas-dental-moder-gz3o.bolt.host"
