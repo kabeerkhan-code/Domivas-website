@@ -90,30 +90,74 @@ const Contact = () => {
     setSubmitAttempts(prev => prev + 1);
     setLastSubmitTime(Date.now());
     
-    // Create FormData object for Netlify
-    const formDataToSubmit = new URLSearchParams({
-      'form-name': 'contact-form',
-      ...validatedData
-    });
-    
-    // Submit to Netlify
-    fetch('/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formDataToSubmit.toString()
-    })
-    .then(() => {
-      setIsSubmitted(true);
-      // Reset form after successful submission
-      setFormData({ name: '', email: '', message: '' });
-    })
-    .catch((error) => {
-      console.error('Form submission failed:', error);
-      alert('There was an error submitting your message. Please try again.');
-    })
-    .finally(() => {
+    // Submit to Supabase
+    submitToSupabase(validatedData);
+  };
+
+  // Primary Supabase submission
+  const submitToSupabase = async (validatedData: any) => {
+    try {
+      // Get browser info for security
+      const userAgent = navigator.userAgent;
+      
+      // Create contact in Supabase
+      const result = await createContact({
+        name: validatedData.name,
+        email: validatedData.email,
+        message: validatedData.message,
+        status: 'new',
+        user_agent: userAgent
+      });
+      
+      if (result.success) {
+        setIsSubmitted(true);
+        // Reset form after successful submission
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        // Handle specific error messages
+        alert(result.error || 'Failed to submit your message. Please try again.');
+      }
+    } catch (error) {
+      console.error('Supabase submission error:', error);
+      
+      // Try fallback Netlify submission
+      const fallbackSuccess = await submitToNetlify(validatedData);
+      
+      if (fallbackSuccess) {
+        alert('Your message was submitted successfully via our backup system. We\'ll respond within 24 hours.');
+      } else {
+        alert('There was an error submitting your message. Please try again or contact support directly.');
+      }
+    } finally {
       setIsSubmitting(false);
-    });
+    }
+  };
+
+  // Fallback Netlify submission (if Supabase fails)
+  const submitToNetlify = async (validatedData: any) => {
+    try {
+      const response = await fetch('/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          'form-name': 'contact-form',
+          ...validatedData
+        }).toString()
+      });
+      
+      if (response.ok) {
+        setIsSubmitted(true);
+        // Reset form after successful submission
+        setFormData({ name: '', email: '', message: '' });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Netlify submission failed:', error);
+      return false;
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

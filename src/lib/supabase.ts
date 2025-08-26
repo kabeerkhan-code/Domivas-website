@@ -25,6 +25,19 @@ export interface Booking {
   notes?: string;
 }
 
+// Types for our contact system
+export interface Contact {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  status: 'new' | 'responded' | 'closed';
+  created_at: string;
+  updated_at: string;
+  user_agent?: string;
+  ip_address?: string;
+}
+
 // Function to check if a time slot is available
 export async function checkTimeSlotAvailability(date: string, time: string): Promise<boolean> {
   try {
@@ -172,6 +185,136 @@ export async function getBookings(startDate?: string, endDate?: string): Promise
     return data || [];
   } catch (error) {
     console.error('Error fetching bookings:', error);
+    return [];
+  }
+}
+
+// Function to create a new contact inquiry
+export async function createContact(contactData: Omit<Contact, 'id' | 'created_at' | 'updated_at'>): Promise<{ success: boolean; contact?: Contact; error?: string }> {
+  try {
+    // Validate input data
+    if (!contactData.name || contactData.name.length < 2 || contactData.name.length > 100) {
+      return {
+        success: false,
+        error: 'Name must be between 2 and 100 characters.'
+      };
+    }
+
+    if (!contactData.email || !contactData.email.match(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/)) {
+      return {
+        success: false,
+        error: 'Please provide a valid email address.'
+      };
+    }
+
+    if (!contactData.message || contactData.message.length < 10 || contactData.message.length > 2000) {
+      return {
+        success: false,
+        error: 'Message must be between 10 and 2000 characters.'
+      };
+    }
+
+    // Create the contact inquiry
+    const { data, error } = await supabase
+      .from('contacts')
+      .insert([contactData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating contact:', error);
+      return {
+        success: false,
+        error: 'Failed to submit your message. Please try again.'
+      };
+    }
+
+    return {
+      success: true,
+      contact: data
+    };
+  } catch (error) {
+    console.error('Error creating contact:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred. Please try again.'
+    };
+  }
+}
+
+// Function to update contact status
+export async function updateContactStatus(contactId: string, status: Contact['status']): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('contacts')
+      .update({ status })
+      .eq('id', contactId);
+
+    if (error) {
+      console.error('Error updating contact status:', error);
+      return {
+        success: false,
+        error: 'Failed to update contact status.'
+      };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating contact status:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred.'
+    };
+  }
+}
+
+// Function to get contacts for admin view
+export async function getContacts(status?: Contact['status'], limit?: number): Promise<Contact[]> {
+  try {
+    let query = supabase
+      .from('contacts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (status) {
+      query = query.eq('status', status);
+    }
+    
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching contacts:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching contacts:', error);
+    return [];
+  }
+}
+
+// Function to get contact by email (for user to view their own submissions)
+export async function getContactsByEmail(email: string): Promise<Contact[]> {
+  try {
+    const { data, error } = await supabase
+      .from('contacts')
+      .select('*')
+      .eq('email', email)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching contacts by email:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching contacts by email:', error);
     return [];
   }
 }
