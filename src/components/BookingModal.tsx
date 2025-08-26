@@ -428,7 +428,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                 Request Sent!
               </h3>
               <p className="text-gray-600 text-lg leading-relaxed max-w-md mx-auto">
-                Thank you for your interest! We'll send you the call link by email within 24 hours for your free 10-minute consultation.
+                Thank you! We'll send you the call link by email within 24 hours for your free 10-minute consultation.
               </p>
             </div>
           )}

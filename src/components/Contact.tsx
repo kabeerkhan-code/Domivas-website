@@ -326,7 +326,7 @@ const Contact = () => {
                 Message Sent Successfully!
               </h3>
               <p className="text-gray-600 text-xl">
-                Thank you for reaching out! We'll get back to you by email within 24 hours.
+                Thank you! We'll get back to you by email within 24 hours.
               </p>
               <button
                 onClick={() => setIsSubmitted(false)}
