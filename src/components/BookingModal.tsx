@@ -362,9 +362,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   value={formData.preferredDate}
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
+                  onClick={(e) => e.currentTarget.focus()}
                   min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} // Tomorrow
                   max={new Date(Date.now() + 31 * 86400000).toISOString().split('T')[0]} // 31 days from now (full month)
-                  className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900"
+                  className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 cursor-pointer"
                 />
               </div>
 
