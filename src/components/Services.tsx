@@ -50,13 +50,13 @@ const Services = () => {
               </h3>
               
               <p className="text-xl lg:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-                Experience exactly what we build for dental clinics. This is a real, working website designed to earn trust and drive appointments.
+                See the design quality and layout we create for dental clinics. This demo showcases the professional look, clear messaging, and trust-building elements your site will have.
               </p>
               
               <div className="space-y-6 mb-12">
                 <div className="flex items-center justify-center space-x-4 text-gray-300">
                   <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  <span className="text-lg font-semibold">Live, fully functional demo</span>
+                  <span className="text-lg font-semibold">Professional design showcase</span>
                 </div>
                 <div className="flex items-center justify-center space-x-4 text-gray-300">
                   <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse animation-delay-1000"></div>
@@ -64,7 +64,7 @@ const Services = () => {
                 </div>
                 <div className="flex items-center justify-center space-x-4 text-gray-300">
                   <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse animation-delay-2000"></div>
-                  <span className="text-lg font-semibold">Built for trust and conversions</span>
+                  <span className="text-lg font-semibold">Clean layout and clear messaging</span>
                 </div>
               </div>
               
@@ -78,7 +78,7 @@ const Services = () => {
               </a>
               
               <p className="text-gray-400 text-lg font-medium">
-                Opens in new tab • No signup required • Fully interactive
+                Opens in new tab • Design showcase • See the quality level
               </p>
             </div>
           </div>
