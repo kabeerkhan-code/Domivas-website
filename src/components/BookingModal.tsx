@@ -256,12 +256,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
         business_name: validatedData.businessName,
         
         // UK (Your) side
-        booking_date: validatedData.preferredDate,
-        booking_time_uk: validatedData.preferredTime, // This is UK time
+        appointment_date_uk: validatedData.preferredDate,
+        appointment_time_uk: validatedData.preferredTime, // This is UK time
         
         // User's side
-        user_local_date: userLocalDate,
-        user_local_time: userLocalTime,
+        appointment_date_user: userLocalDate,
+        appointment_time_user: userLocalTime,
         user_timezone: userTimezone,
         user_display_time: userDisplayDateTime,
         
