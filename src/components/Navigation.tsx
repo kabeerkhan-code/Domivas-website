@@ -83,9 +83,10 @@ const Navigation: React.FC<NavigationProps> = ({ onPrivacyClick }) => {
               </button>
               <button 
                 onClick={() => setIsBookingModalOpen(true)}
-                className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full hover:shadow-xl transition-all duration-300 font-black text-sm uppercase tracking-wide hover:scale-110 shadow-md border-2 border-red-700"
+                className="bg-red-600 hover:bg-red-700 text-white px-6 lg:px-8 py-3 rounded-full hover:shadow-xl transition-all duration-300 font-black text-xs lg:text-sm uppercase tracking-wide hover:scale-110 shadow-md border-2 border-red-700 whitespace-nowrap"
               >
-                BOOK FREE CONSULTATION
+                <span className="hidden lg:inline">BOOK FREE CONSULTATION</span>
+                <span className="lg:hidden">BOOK NOW</span>
               </button>
             </div>
 
@@ -143,9 +144,9 @@ const Navigation: React.FC<NavigationProps> = ({ onPrivacyClick }) => {
               </button>
               <button 
                 onClick={() => setIsBookingModalOpen(true)}
-                className="block w-full bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full hover:shadow-xl transition-all duration-300 font-black text-lg uppercase tracking-wide hover:scale-105 shadow-md border-2 border-red-700 text-center mt-4"
+                className="block w-full bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded-full hover:shadow-xl transition-all duration-300 font-black text-base uppercase tracking-wide hover:scale-105 shadow-md border-2 border-red-700 text-center mt-4 max-w-sm mx-auto"
               >
-                BOOK FREE CONSULTATION
+                BOOK NOW
               </button>
             </div>
           </div>

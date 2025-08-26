@@ -402,7 +402,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full px-12 py-6 rounded-2xl transition-all duration-500 font-black text-xl ${
+                className={`w-full px-8 sm:px-12 py-6 rounded-2xl transition-all duration-500 font-black text-lg sm:text-xl max-w-2xl mx-auto ${
                   isSubmitting 
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-red-600 hover:bg-red-700 hover:shadow-lg hover:scale-105'
