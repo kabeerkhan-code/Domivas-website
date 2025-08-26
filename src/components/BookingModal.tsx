@@ -153,6 +153,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     });
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Allow spacebar in form inputs
+    if (e.key === ' ') {
+      e.stopPropagation();
+    }
+  };
+
   // Generate date options for the next 30 days
   const generateDateOptions = () => {
     const dates = [];
@@ -270,6 +277,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   required
                   value={formData.name}
                   onChange={handleChange}
+                  onKeyDown={handleKeyDown}
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 placeholder-gray-500"
                   placeholder="Dr. John Smith"
                 />
@@ -288,6 +296,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   required
                   value={formData.email}
                   onChange={handleChange}
+                  onKeyDown={handleKeyDown}
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 placeholder-gray-500"
                   placeholder="john@dentalclinic.com"
                 />
@@ -306,6 +315,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   required
                   value={formData.phone}
                   onChange={handleChange}
+                  onKeyDown={handleKeyDown}
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 placeholder-gray-500"
                   placeholder="+44 20 1234 5678"
                 />
@@ -324,6 +334,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   required
                   value={formData.businessName}
                   onChange={handleChange}
+                  onKeyDown={handleKeyDown}
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 placeholder-gray-500"
                   placeholder="Your Clinic Name"
                 />
@@ -342,6 +353,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   required
                   value={formData.preferredDate}
                   onChange={handleChange}
+                  onKeyDown={handleKeyDown}
                   min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} // Tomorrow
                   max={new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]} // 30 days from now
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900"
@@ -360,6 +372,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   required
                   value={formData.preferredTime}
                   onChange={handleChange}
+                  onKeyDown={handleKeyDown}
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900"
                 >
                   <option value="">Select your preferred time</option>

@@ -126,6 +126,13 @@ const Contact = () => {
     });
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Allow spacebar in form inputs
+    if (e.key === ' ') {
+      e.stopPropagation();
+    }
+  };
+
   return (
     <section id="contact" className="py-32 bg-gray-50 relative overflow-hidden">
       {/* Animated Background Blobs */}
@@ -273,6 +280,7 @@ const Contact = () => {
                     required
                     value={formData.name}
                     onChange={handleChange}
+                    onKeyDown={handleKeyDown}
                     className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 placeholder-gray-500"
                     placeholder="Your name"
                   />
@@ -288,6 +296,7 @@ const Contact = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
+                    onKeyDown={handleKeyDown}
                     className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 placeholder-gray-500"
                     placeholder="your@email.com"
                   />
@@ -305,6 +314,7 @@ const Contact = () => {
                   rows={6}
                   value={formData.message}
                   onChange={handleChange}
+                  onKeyDown={handleKeyDown}
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 resize-none text-lg text-gray-900 placeholder-gray-500"
                   placeholder="Tell us about your project, ask a question, or describe how we can help you..."
                 />
