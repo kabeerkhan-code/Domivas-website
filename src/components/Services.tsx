@@ -46,27 +46,12 @@ const Services = () => {
             
             <div className="relative z-10">
               <h3 className="text-5xl lg:text-7xl font-black text-white mb-8 leading-none tracking-tight">
-                This Is What <span className="text-red-500">Excellence</span> Looks Like
+                See It <span className="text-red-500">Live</span>
               </h3>
               
               <p className="text-xl lg:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-                Step inside a premium dental website that commands trust and drives bookings. Every pixel crafted to convert visitors into patients. This is the caliber of design your clinic deserves.
+                Clean design. Clear messaging. Built for trust.
               </p>
-              
-              <div className="space-y-6 mb-12">
-                <div className="flex items-center justify-center space-x-4 text-gray-300">
-                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  <span className="text-lg font-semibold">Premium design that builds instant credibility</span>
-                </div>
-                <div className="flex items-center justify-center space-x-4 text-gray-300">
-                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse animation-delay-1000"></div>
-                  <span className="text-lg font-semibold">Flawless on every device, every screen size</span>
-                </div>
-                <div className="flex items-center justify-center space-x-4 text-gray-300">
-                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse animation-delay-2000"></div>
-                  <span className="text-lg font-semibold">Crystal-clear messaging that converts browsers into bookers</span>
-                </div>
-              </div>
               
               <a 
                 href="https://domivas-dental-moder-gz3o.bolt.host"
@@ -74,11 +59,11 @@ const Services = () => {
                 rel="noopener noreferrer"
                 className="inline-block bg-red-600 hover:bg-red-700 text-white px-8 sm:px-12 md:px-16 lg:px-20 py-6 sm:py-8 rounded-full hover:shadow-2xl transition-all duration-500 font-black text-lg sm:text-xl md:text-2xl lg:text-3xl uppercase tracking-wide hover:scale-105 hover:-translate-y-3 shadow-lg border-4 border-red-700 mb-6 w-full max-w-3xl"
               >
-                Experience Premium Design
+                EXPLORE LIVE DEMO SITE
               </a>
               
               <p className="text-gray-400 text-lg font-medium">
-                Opens in new tab • See what $1,000 gets you • This could be your clinic
+                Design showcase • See the quality level
               </p>
             </div>
           </div>
