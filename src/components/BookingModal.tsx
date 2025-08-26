@@ -20,6 +20,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAttempts, setSubmitAttempts] = useState(0);
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  const [bookedTimes, setBookedTimes] = useState<string[]>([]);
+  const [loadingTimes, setLoadingTimes] = useState(false);
 
   // Auto-dismiss success message after 1 minute
   React.useEffect(() => {
@@ -31,6 +33,30 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       return () => clearTimeout(timer);
     }
   }, [isSubmitted, onClose]);
+
+  // Fetch booked times when date changes
+  React.useEffect(() => {
+    if (formData.preferredDate) {
+      fetchBookedTimes(formData.preferredDate);
+    }
+  }, [formData.preferredDate]);
+
+  // Function to fetch booked times from your backend
+  const fetchBookedTimes = async (date: string) => {
+    setLoadingTimes(true);
+    try {
+      // Replace with your actual API endpoint
+      const response = await fetch(`/api/bookings/booked-times?date=${date}`);
+      const data = await response.json();
+      setBookedTimes(data.bookedTimes || []);
+    } catch (error) {
+      console.error('Failed to fetch booked times:', error);
+      // Fallback to empty array if API fails
+      setBookedTimes([]);
+    } finally {
+      setLoadingTimes(false);
+    }
+  };
   // Security: Input validation and sanitization
   const validateInput = (value: string, type: 'name' | 'email' | 'phone' | 'business' | 'date' | 'time') => {
     // Remove potentially dangerous characters
@@ -185,14 +211,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   };
 
   // Generate time options based on UK business hours (9am-6pm) but show in user's timezone
-  const generateTimeOptions = () => {
+  const generateTimeOptions = (selectedDate?: string) => {
     const times = [];
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
-    // Mock booked times - replace this with real data from your booking system
-    const bookedTimes = [
-      '10:00', '10:20', '14:40', '15:00', '16:20'
-    ];
     
     // UK business hours: 9am to 6:30pm (every 20 minutes)
     const ukTimes = [];
@@ -212,6 +233,22 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       // Skip booked times
       if (bookedTimes.includes(ukTime)) {
         return;
+      }
+      
+      // Skip past times if date is today
+      if (selectedDate) {
+        const selectedDateObj = new Date(selectedDate);
+        const today = new Date();
+        
+        if (selectedDateObj.toDateString() === today.toDateString()) {
+          const [hours, minutes] = ukTime.split(':');
+          const timeToday = new Date();
+          timeToday.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+          
+          if (timeToday <= new Date()) {
+            return; // Skip past times
+          }
+        }
       }
       
       // Create a date object for today with UK time
@@ -397,10 +434,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   value={formData.preferredTime}
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
+                  disabled={loadingTimes}
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900"
                 >
-                  <option value="">Select your preferred time</option>
-                  {generateTimeOptions().map((time, index) => (
+                  <option value="">
+                    {loadingTimes ? 'Loading available times...' : 'Select your preferred time'}
+                  </option>
+                  {generateTimeOptions(formData.preferredDate).map((time, index) => (
                     <option key={index} value={time.value}>
                       {time.display}
                     </option>
