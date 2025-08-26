@@ -166,8 +166,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
         if (!timeRegex.test(sanitized)) return '';
         
         const [hours, minutes] = sanitized.split(':').map(Number);
-        // Only allow business hours (9:00-18:30) and 20-minute intervals
-        if (hours < 9 || hours > 18 || (hours === 18 && minutes > 30)) return '';
+        // Only allow business hours (9:00-21:00) and 20-minute intervals
+        if (hours < 9 || hours > 21 || (hours === 21 && minutes > 0)) return '';
         if (minutes % 20 !== 0) return '';
         
         return sanitized;
@@ -389,13 +389,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     
     // UK business hours: 9am to 6:30pm (every 20 minutes) - converted to user's timezone
+    // UK business hours: 9am to 9:00pm (every 20 minutes) - converted to user's timezone
     const ukBusinessHours = [];
     
     // Generate times in 20-minute intervals
-    for (let hour = 9; hour <= 18; hour++) {
+    for (let hour = 9; hour <= 21; hour++) {
       for (let minute = 0; minute < 60; minute += 20) {
-        // Stop at 6:30 PM (18:30)
-        if (hour === 18 && minute > 30) break;
+        // Stop at 9:00 PM (21:00)
+        if (hour === 21 && minute > 0) break;
         
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         ukBusinessHours.push(timeString);
@@ -656,7 +657,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   ))}
                 </select>
                 <p className="text-sm text-gray-500 mt-2">
-                  Times shown in your local timezone. All appointments are conducted during UK business hours (9 AM - 6:30 PM GMT).
+                  Times shown in your local timezone. All appointments are conducted during UK business hours (9 AM - 9 PM GMT).
                 </p>
               </div>
               {/* Additional Info */}
