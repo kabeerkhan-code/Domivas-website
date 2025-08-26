@@ -219,7 +219,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     
     // Security: Prevent too fast submissions (minimum 10 seconds)
     const timeSinceFormStart = Date.now() - formStartTime;
-    if (timeSinceFormStart < 10000) {
+    if (timeSinceFormStart < 60000) {
       alert('Please take your time filling out the form.');
       return;
     }
