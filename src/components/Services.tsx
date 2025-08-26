@@ -34,31 +34,53 @@ const Services = () => {
           </div>
         </div>
 
-        {/* Demo Screenshot Placeholder */}
+        {/* Enhanced Demo CTA Section */}
         <div className="mb-20">
-          <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-lg">
-            <div className="bg-gray-100 rounded-2xl overflow-hidden">
-              <img 
-                src="/src/assets/image copy copy.png" 
-                alt="Dental Demo Site Screenshot - Professional, Clean, Trustworthy Design"
-                className="w-full h-auto object-contain rounded-2xl hover:scale-105 transition-transform duration-500"
-              />
+          <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-3xl p-16 text-center relative overflow-hidden shadow-2xl">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-10 left-10 w-20 h-20 border-2 border-white rotate-45"></div>
+              <div className="absolute bottom-10 right-10 w-16 h-16 border-2 border-white rounded-full"></div>
+              <div className="absolute top-1/2 right-20 w-12 h-12 bg-white rotate-12"></div>
             </div>
-          </div>
-          
-          {/* Demo CTA Button */}
-          <div className="text-center mt-16">
-            <a 
-              href="https://domivas-dental-moder-gz3o.bolt.host"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-gray-900 hover:bg-gray-800 text-white px-12 py-6 rounded-full hover:shadow-2xl transition-all duration-500 font-black text-xl uppercase tracking-wide hover:scale-110 hover:-translate-y-2 shadow-lg border-4 border-gray-700"
-            >
-              Explore Live Demo Site
-            </a>
-            <p className="text-gray-600 mt-6 text-lg">
-              See exactly what we build for dental clinics
-            </p>
+            
+            <div className="relative z-10">
+              <h3 className="text-5xl lg:text-7xl font-black text-white mb-8 leading-none tracking-tight">
+                See It <span className="text-red-500">Live</span>
+              </h3>
+              
+              <p className="text-xl lg:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+                Experience exactly what we build for dental clinics. This is a real, working website designed to earn trust and drive appointments.
+              </p>
+              
+              <div className="space-y-6 mb-12">
+                <div className="flex items-center justify-center space-x-4 text-gray-300">
+                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                  <span className="text-lg font-semibold">Live, fully functional demo</span>
+                </div>
+                <div className="flex items-center justify-center space-x-4 text-gray-300">
+                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse animation-delay-1000"></div>
+                  <span className="text-lg font-semibold">Mobile-responsive design</span>
+                </div>
+                <div className="flex items-center justify-center space-x-4 text-gray-300">
+                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse animation-delay-2000"></div>
+                  <span className="text-lg font-semibold">Built for trust and conversions</span>
+                </div>
+              </div>
+              
+              <a 
+                href="https://domivas-dental-moder-gz3o.bolt.host"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-red-600 hover:bg-red-700 text-white px-20 py-8 rounded-full hover:shadow-2xl transition-all duration-500 font-black text-2xl lg:text-3xl uppercase tracking-wide hover:scale-110 hover:-translate-y-3 shadow-lg border-4 border-red-700 mb-6"
+              >
+                🚀 Explore Live Demo Site
+              </a>
+              
+              <p className="text-gray-400 text-lg font-medium">
+                Opens in new tab • No signup required • Fully interactive
+              </p>
+            </div>
           </div>
         </div>
 
