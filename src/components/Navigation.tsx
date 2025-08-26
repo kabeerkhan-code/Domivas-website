@@ -85,8 +85,9 @@ const Navigation: React.FC<NavigationProps> = ({ onPrivacyClick }) => {
                 onClick={() => setIsBookingModalOpen(true)}
                 className="bg-red-600 hover:bg-red-700 text-white px-6 lg:px-8 py-3 rounded-full hover:shadow-xl transition-all duration-300 font-black text-xs lg:text-sm uppercase tracking-wide hover:scale-110 shadow-md border-2 border-red-700 whitespace-nowrap"
               >
-                <span className="hidden lg:inline">BOOK FREE CONSULTATION</span>
-                <span className="lg:hidden">BOOK NOW</span>
+                <span className="hidden xl:inline">BOOK FREE CONSULTATION</span>
+                <span className="hidden lg:inline xl:hidden">BOOK QUICK FREE CONSULTATION</span>
+                <span className="lg:hidden">BOOK QUICK FREE CONSULTATION</span>
               </button>
             </div>
 
