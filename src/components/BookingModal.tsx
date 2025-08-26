@@ -198,20 +198,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     ];
     
     ukTimes.forEach(ukTime => {
-      // Create a date object for today with UK time (GMT/BST)
+      // Create a date object for today with UK time
       const today = new Date();
       const [hours, minutes] = ukTime.split(':');
       
-      // Create UK time - accounting for GMT/BST
+      // Create a date with the UK time
       const ukDate = new Date();
-      ukDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-      
-      // Convert UK time to UTC first
-      const ukOffset = ukDate.getTimezoneOffset(); // UK offset from UTC
-      const ukUtcTime = new Date(ukDate.getTime() + (ukOffset * 60000));
+      ukDate.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
       
       // Convert to user's timezone
-      const userTime = ukUtcTime.toLocaleTimeString('en-US', {
+      const userTime = ukDate.toLocaleTimeString('en-US', {
         timeZone: userTimezone,
         hour: '2-digit',
         minute: '2-digit',
@@ -219,7 +215,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       });
       
       // Get the user's timezone abbreviation
-      const timezoneName = ukUtcTime.toLocaleTimeString('en-US', {
+      const timezoneName = ukDate.toLocaleTimeString('en-US', {
         timeZone: userTimezone,
         timeZoneName: 'short'
       }).split(' ').pop();
