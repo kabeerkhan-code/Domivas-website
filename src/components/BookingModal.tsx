@@ -354,16 +354,47 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   <Calendar size={16} className="mr-2" />
                   Preferred Call Date *
                 </label>
-                <div 
-                  className="relative cursor-pointer"
-                  onClick={() => {
-                    const dateInput = document.getElementById('preferredDate') as HTMLInputElement;
-                    if (dateInput) {
-                      dateInput.focus();
-                      dateInput.click();
-                    }
-                  }}
-                >
+                <div className="relative">
+                  {/* Invisible overlay that covers the entire input area */}
+                  <div 
+                    className="absolute inset-0 z-10 cursor-pointer"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      const dateInput = document.getElementById('preferredDate') as HTMLInputElement;
+                      if (dateInput) {
+                        // Use setTimeout to ensure the event is processed properly
+                        setTimeout(() => {
+                          dateInput.focus();
+                          dateInput.click();
+                          // For mobile devices, try to trigger the picker
+                          if ('showPicker' in dateInput && typeof dateInput.showPicker === 'function') {
+                            try {
+                              dateInput.showPicker();
+                            } catch (error) {
+                              // Silently fail if showPicker is not supported or blocked
+                            }
+                          }
+                        }, 10);
+                      }
+                    }}
+                    onTouchStart={(e) => {
+                      e.preventDefault();
+                      const dateInput = document.getElementById('preferredDate') as HTMLInputElement;
+                      if (dateInput) {
+                        setTimeout(() => {
+                          dateInput.focus();
+                          dateInput.click();
+                          if ('showPicker' in dateInput && typeof dateInput.showPicker === 'function') {
+                            try {
+                              dateInput.showPicker();
+                            } catch (error) {
+                              // Silently fail if showPicker is not supported or blocked
+                            }
+                          }
+                        }, 10);
+                      }
+                    }}
+                  />
                   <input
                     type="date"
                     id="preferredDate"
@@ -374,7 +405,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                     onKeyDown={handleKeyDown}
                     min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} // Tomorrow
                     max={new Date(Date.now() + 31 * 86400000).toISOString().split('T')[0]} // 31 days from now (full month)
-                    className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 cursor-pointer"
+                    className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all duration-300 text-lg text-gray-900 relative z-0"
                   />
                 </div>
               </div>
