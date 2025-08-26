@@ -189,21 +189,29 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     const times = [];
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     
-    // UK business hours: 9am to 6pm (every 30 minutes)
+    // UK business hours: 9am to 7pm (every 30 minutes)
     const ukTimes = [
       '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
       '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
-      '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
+      '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+      '18:00', '18:30', '19:00'
     ];
     
     ukTimes.forEach(ukTime => {
-      // Create a date object for today with UK time
-      const ukDate = new Date();
+      // Create a date object for today with UK time (GMT/BST)
+      const today = new Date();
       const [hours, minutes] = ukTime.split(':');
-      ukDate.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
+      
+      // Create UK time - accounting for GMT/BST
+      const ukDate = new Date();
+      ukDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      
+      // Convert UK time to UTC first
+      const ukOffset = ukDate.getTimezoneOffset(); // UK offset from UTC
+      const ukUtcTime = new Date(ukDate.getTime() + (ukOffset * 60000));
       
       // Convert to user's timezone
-      const userTime = ukDate.toLocaleTimeString('en-US', {
+      const userTime = ukUtcTime.toLocaleTimeString('en-US', {
         timeZone: userTimezone,
         hour: '2-digit',
         minute: '2-digit',
@@ -211,7 +219,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       });
       
       // Get the user's timezone abbreviation
-      const timezoneName = ukDate.toLocaleTimeString('en-US', {
+      const timezoneName = ukUtcTime.toLocaleTimeString('en-US', {
         timeZone: userTimezone,
         timeZoneName: 'short'
       }).split(' ').pop();
