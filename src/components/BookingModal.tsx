@@ -392,15 +392,15 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                 <ul className="space-y-2 text-gray-600">
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-red-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span>We'll call you at your preferred date and time for a quick 10-minute consultation</span>
+                    <span>You'll receive a call at your preferred date and time for a quick 10-minute consultation</span>
                   </li>
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-red-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span>We discuss your current website and what's not working for your clinic</span>
+                    <span>Together we'll discuss your current website and what's not working for your clinic</span>
                   </li>
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-red-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                    <span>We show you a real mockup designed specifically for your clinic</span>
+                    <span>You'll see a real mockup designed specifically for your clinic</span>
                   </li>
                   <li className="flex items-start">
                     <div className="w-2 h-2 bg-red-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
