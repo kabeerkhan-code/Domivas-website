@@ -18,12 +18,12 @@ export interface Booking {
   business_name: string;
   
   // UK (Your) side - when YOU make the call
-  booking_date: string;
-  booking_time_uk: string; // UK/GMT time
+  appointment_date_uk: string; // UK date when YOU make the call
+  appointment_time_uk: string; // UK time when YOU make the call
   
   // User's side - their local date/time
-  user_local_date: string; // Date in user's timezone
-  user_local_time: string; // Time in user's timezone
+  appointment_date_user: string; // Date in user's timezone
+  appointment_time_user: string; // Time in user's timezone
   user_timezone: string; // User's timezone
   user_display_time: string; // Formatted display
   
@@ -52,8 +52,8 @@ export async function checkTimeSlotAvailability(date: string, time: string): Pro
     const { data, error } = await supabase
       .from('bookings')
       .select('id')
-      .eq('booking_date', date)
-      .eq('booking_time_uk', time)
+      .eq('appointment_date_uk', date)
+      .eq('appointment_time_uk', time)
       .eq('status', 'confirmed')
       .single();
 
@@ -95,7 +95,7 @@ export async function getBookedTimes(date: string): Promise<string[]> {
 export async function createBooking(bookingData: Omit<Booking, 'id' | 'created_at' | 'updated_at'>): Promise<{ success: boolean; booking?: Booking; error?: string }> {
   try {
     // First check if the slot is still available
-    const isAvailable = await checkTimeSlotAvailability(bookingData.booking_date, bookingData.booking_time_uk);
+    const isAvailable = await checkTimeSlotAvailability(bookingData.appointment_date_uk, bookingData.appointment_time_uk);
     
     if (!isAvailable) {
       return {
