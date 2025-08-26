@@ -14,6 +14,16 @@ const Contact = () => {
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
+  // Auto-dismiss success message after 1 minute
+  React.useEffect(() => {
+    if (isSubmitted) {
+      const timer = setTimeout(() => {
+        setIsSubmitted(false);
+      }, 60000); // 1 minute
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isSubmitted]);
   // Security: Input validation and sanitization
   const validateInput = (value: string, type: 'name' | 'email' | 'message') => {
     // Remove potentially dangerous characters and scripts
@@ -314,7 +324,11 @@ const Contact = () => {
               </button>
             </form>
           ) : (
-            <div className="text-center py-16">
+            <div 
+              className="text-center py-16 cursor-pointer" 
+              onClick={() => setIsSubmitted(false)}
+              title="Click anywhere to close"
+            >
               <button
                 onClick={() => setIsSubmitted(false)}
                 className="absolute top-8 right-8 text-gray-400 hover:text-gray-600 transition-colors"
@@ -327,6 +341,9 @@ const Contact = () => {
               </h3>
               <p className="text-gray-600 text-xl">
                 Thank you! We'll get back to you by email within 24 hours.
+              </p>
+              <p className="text-gray-400 text-sm mt-6">
+                Click anywhere to close • Auto-closes in 1 minute
               </p>
               <button
                 onClick={() => setIsSubmitted(false)}

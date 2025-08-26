@@ -21,6 +21,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const [submitAttempts, setSubmitAttempts] = useState(0);
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
 
+  // Auto-dismiss success message after 1 minute
+  React.useEffect(() => {
+    if (isSubmitted) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 60000); // 1 minute
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isSubmitted, onClose]);
   // Security: Input validation and sanitization
   const validateInput = (value: string, type: 'name' | 'email' | 'phone' | 'business' | 'date' | 'time') => {
     // Remove potentially dangerous characters
@@ -412,7 +422,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
               </button>
             </form>
           ) : (
-            <div className="text-center py-16">
+            <div 
+              className="text-center py-16 cursor-pointer" 
+              onClick={onClose}
+              title="Click anywhere to close"
+            >
               {/* Close button for success message */}
               <button
                 onClick={onClose}
@@ -429,6 +443,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
               </h3>
               <p className="text-gray-600 text-lg leading-relaxed max-w-md mx-auto">
                 Thank you! We'll send you the call link by email within 24 hours for your free 10-minute consultation.
+              </p>
+              <p className="text-gray-400 text-sm mt-6">
+                Click anywhere to close • Auto-closes in 1 minute
               </p>
             </div>
           )}
