@@ -227,10 +227,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
         phone: validatedData.phone,
         business_name: validatedData.businessName,
         booking_date: validatedData.preferredDate,
-        booking_time: validatedData.preferredTime,
+        booking_time_uk: validatedData.preferredTime, // This is UK time
         status: 'pending',
         user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        notes: `Form submitted at: ${new Date().toISOString()}`
+        user_display_time: generateTimeOptions(validatedData.preferredDate)
+          .find(t => t.value === validatedData.preferredTime)?.display || '',
+        notes: `Consultation booking via website. Form submitted at: ${new Date().toISOString()}`
       });
       
       if (result.success) {

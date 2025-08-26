@@ -17,11 +17,12 @@ export interface Booking {
   phone: string;
   business_name: string;
   booking_date: string;
-  booking_time: string;
+  booking_time_uk: string; // UK/GMT time
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   created_at: string;
   updated_at: string;
   user_timezone?: string;
+  user_display_time?: string; // Time as shown to user
   notes?: string;
 }
 
@@ -45,7 +46,7 @@ export async function checkTimeSlotAvailability(date: string, time: string): Pro
       .from('bookings')
       .select('id')
       .eq('booking_date', date)
-      .eq('booking_time', time)
+      .eq('booking_time_uk', time)
       .eq('status', 'confirmed')
       .single();
 
@@ -67,7 +68,7 @@ export async function getBookedTimes(date: string): Promise<string[]> {
   try {
     const { data, error } = await supabase
       .from('bookings')
-      .select('booking_time')
+      .select('booking_time_uk')
       .eq('booking_date', date)
       .in('status', ['pending', 'confirmed']);
 
@@ -76,7 +77,7 @@ export async function getBookedTimes(date: string): Promise<string[]> {
       return [];
     }
 
-    return data?.map(booking => booking.booking_time) || [];
+    return data?.map(booking => booking.booking_time_uk) || [];
   } catch (error) {
     console.error('Error fetching booked times:', error);
     return [];
@@ -87,7 +88,7 @@ export async function getBookedTimes(date: string): Promise<string[]> {
 export async function createBooking(bookingData: Omit<Booking, 'id' | 'created_at' | 'updated_at'>): Promise<{ success: boolean; booking?: Booking; error?: string }> {
   try {
     // First check if the slot is still available
-    const isAvailable = await checkTimeSlotAvailability(bookingData.booking_date, bookingData.booking_time);
+    const isAvailable = await checkTimeSlotAvailability(bookingData.booking_date, bookingData.booking_time_uk);
     
     if (!isAvailable) {
       return {
@@ -165,7 +166,7 @@ export async function getBookings(startDate?: string, endDate?: string): Promise
       .from('bookings')
       .select('*')
       .order('booking_date', { ascending: true })
-      .order('booking_time', { ascending: true });
+      .order('booking_time_uk', { ascending: true });
 
     if (startDate) {
       query = query.gte('booking_date', startDate);
