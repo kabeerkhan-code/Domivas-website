@@ -16,13 +16,20 @@ export interface Booking {
   email: string;
   phone: string;
   business_name: string;
+  
+  // UK (Your) side - when YOU make the call
   booking_date: string;
   booking_time_uk: string; // UK/GMT time
+  
+  // User's side - their local date/time
+  user_local_date: string; // Date in user's timezone
+  user_local_time: string; // Time in user's timezone
+  user_timezone: string; // User's timezone
+  user_display_time: string; // Formatted display
+  
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   created_at: string;
   updated_at: string;
-  user_timezone?: string;
-  user_display_time?: string; // Time as shown to user
   notes?: string;
 }
 

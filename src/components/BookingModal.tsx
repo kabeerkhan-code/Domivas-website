@@ -220,18 +220,52 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     setLastSubmitTime(Date.now());
     
     try {
+      // Calculate user's local date and time
+      const selectedDate = new Date(validatedData.preferredDate);
+      const [ukHours, ukMinutes] = validatedData.preferredTime.split(':').map(Number);
+      
+      // Create UK datetime
+      const ukDateTime = new Date(selectedDate);
+      ukDateTime.setHours(ukHours, ukMinutes, 0, 0);
+      
+      // Convert to user's timezone
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const userDateTime = new Date(ukDateTime.toLocaleString('en-US', { timeZone: userTimezone }));
+      
+      // Format user's local date and time
+      const userLocalDate = userDateTime.toISOString().split('T')[0];
+      const userLocalTime = userDateTime.toTimeString().split(' ')[0].substring(0, 5);
+      
+      // Create formatted display string
+      const userDisplayDateTime = userDateTime.toLocaleString('en-US', {
+        timeZone: userTimezone,
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      });
+      
       // Create booking in Supabase
       const result = await createBooking({
         name: validatedData.name,
         email: validatedData.email,
         phone: validatedData.phone,
         business_name: validatedData.businessName,
+        
+        // UK (Your) side
         booking_date: validatedData.preferredDate,
         booking_time_uk: validatedData.preferredTime, // This is UK time
+        
+        // User's side
+        user_local_date: userLocalDate,
+        user_local_time: userLocalTime,
+        user_timezone: userTimezone,
+        user_display_time: userDisplayDateTime,
+        
         status: 'pending',
-        user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        user_display_time: generateTimeOptions(validatedData.preferredDate)
-          .find(t => t.value === validatedData.preferredTime)?.display || '',
         notes: `Consultation booking via website. Form submitted at: ${new Date().toISOString()}`
       });
       
